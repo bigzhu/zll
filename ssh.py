@@ -27,6 +27,7 @@ def ssh(ssh_info):
     if len(ssh_info) > 4:
         port = ssh_info[4]
     command = "export TERM=xterm;ssh -p %s %s@%s" % (port, user, ip)
+    print 'ssh 登录中......'
     os.system(command)
 
 
@@ -50,11 +51,11 @@ def select(ssh_infos):
         else:
             input = str(input)
     except ValueError as verr:
-        print verr
+        pass
+        #print verr
 
     selected_ssh_infos = []
     for i in ssh_infos:
-        print i[1]
         index = i[1].find(input)
         if(index != -1):
             selected_ssh_infos.append(i)
