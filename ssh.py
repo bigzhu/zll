@@ -2,9 +2,13 @@
 # encoding=utf-8
 # file_name=ssh.py
 
+from __future__ import print_function #为了让 Python2 的 print() 不要答应成 tuple
 import sys
 import os
-
+if sys.version>'3':
+    is_version3 = True
+else:
+    is_version3 = False
 
 def readConf():
     '''
@@ -32,43 +36,46 @@ def ssh(ssh_info):
 
 
 def printInfo(ssh_info):
-    #print("") # 打印一行空白, 避免有的终端没有顶格
     for i in ssh_info:
         if len(i)>4:
-            print str(ssh_info.index(i)).ljust(4), i[0].ljust(10), i[1].ljust(16), i[2].ljust(10), i[3].ljust(16), i[4]
+            print(str(ssh_info.index(i)).ljust(4), i[0].ljust(10), i[1].ljust(16), i[2].ljust(10), i[3].ljust(16), i[4])
         else:
-            print str(ssh_info.index(i)).ljust(4), i[0].ljust(10), i[1].ljust(16), i[2].ljust(10), i[3]
+            print(str(ssh_info.index(i)).ljust(4), i[0].ljust(10), i[1].ljust(16), i[2].ljust(10), i[3])
 
 
 def select(ssh_infos):
     printInfo(ssh_infos)
-    input = raw_input('请输入序列号 or ip or hostname (q 退出):')
-    if(input == 'q'):
+    # 输入
+    if is_version3:
+        i_value = input('请输入序列号 or ip or hostname (q 退出):')
+    else:
+        i_value = raw_input('请输入序列号 or ip or hostname (q 退出):')
+    if(i_value == 'q'):
         exit(0)
     try:
-        input = int(input)
-        if input <= len(ssh_infos) and input > 0:
-            ssh(ssh_infos[input])
+        i_value = int(i_value)
+        if i_value <= len(ssh_infos) and i_value > 0:
+            ssh(ssh_infos[i_value])
             return
         else:
-            input = str(input)
+            i_value = str(i_value)
     except ValueError as verr:
         pass
         #print verr
 
     selected_ssh_infos = []
     for i in ssh_infos:
-        index = i[1].find(input)
+        index = i[1].find(i_value)
         if(index != -1):
             selected_ssh_infos.append(i)
     if(len(selected_ssh_infos) == 0):
-        print '没找到和这个ip有近似的'
+        print('没找到和这个ip有近似的')
         select(ssh_infos)
     elif(len(selected_ssh_infos) == 1):  # 找到一个，直接登录
         ssh(selected_ssh_infos[0])
         return
     else:
-        print('找到%s个匹配%s的, 请再次选择!'%(len(selected_ssh_infos), input))
+        print('找到%s个匹配%s的, 请再次选择!'%(len(selected_ssh_infos), i_value))
         return select(selected_ssh_infos)  # 找到一堆，再过滤
 
 
