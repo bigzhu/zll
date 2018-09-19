@@ -41,6 +41,7 @@ def printInfo(ssh_info):
 
 
 def select(ssh_infos):
+    printInfo(ssh_infos)
     input = raw_input('请输入序列号 or ip or hostname (q 退出):')
     if(input == 'q'):
         exit(0)
@@ -72,6 +73,5 @@ def select(ssh_infos):
 
 if __name__ == "__main__":
     ssh_info = readConf()
-    printInfo(ssh_info)
     if ssh_info is not None:
         select(ssh_info)
