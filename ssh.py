@@ -26,13 +26,13 @@ def ssh(ssh_info):
     port = 22
     if len(ssh_info) > 4:
         port = ssh_info[4]
-    print 'ssh 登录中......'
+    print('ssh 登录 %s 中......'%ssh_info[1])
     command = "export TERM=xterm;ssh -p %s %s@%s" % (port, user, ip)
     os.system(command)
 
 
 def printInfo(ssh_info):
-    print("") # 打印一行空白, 避免有的终端没有顶格
+    #print("") # 打印一行空白, 避免有的终端没有顶格
     for i in ssh_info:
         if len(i)>4:
             print str(ssh_info.index(i)).ljust(4), i[0].ljust(10), i[1].ljust(16), i[2].ljust(10), i[3].ljust(16), i[4]
@@ -68,6 +68,7 @@ def select(ssh_infos):
         ssh(selected_ssh_infos[0])
         return
     else:
+        print('找到%s个匹配%s的, 请再次选择!'%(len(selected_ssh_infos), input))
         return select(selected_ssh_infos)  # 找到一堆，再过滤
 
 
