@@ -54,7 +54,7 @@ def select(ssh_infos):
         exit(0)
     try:
         i_value = int(i_value)
-        if i_value <= len(ssh_infos) and i_value > 0:
+        if i_value <= len(ssh_infos):
             ssh(ssh_infos[i_value])
             return
         else:

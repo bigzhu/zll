@@ -20,8 +20,10 @@ admin 192.168.0.2 p 哈哈鸡
 # install
 运行
 
+请先安装 [bash_tools](https://github.com/bigzhu/bash_tools)
+
 ```bash
-sh ./install.sh
+install.sh
 ```
 
 只是建了一个 link 到 `/usr/local/bin/`, 方便在任意目录启动
