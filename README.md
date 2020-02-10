@@ -23,7 +23,7 @@ admin 192.168.0.2 p 哈哈鸡
 请先安装 [bash_tools](https://github.com/bigzhu/bash_tools)
 
 ```bash
-install.sh
+install.sh ssh.py
 ```
 
 只是建了一个 link 到 `/usr/local/bin/`, 方便在任意目录启动
