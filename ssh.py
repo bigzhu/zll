@@ -2,13 +2,9 @@
 # encoding=utf-8
 # file_name=ssh.py
 
-from __future__ import print_function  # 为了让 Python2 的 print() 不要答应成 tuple
+# from __future__ import print_function  # 为了让 Python2 的 print() 不要答应成 tuple
 import sys
 import os
-if sys.version > '3':
-    is_version3 = True
-else:
-    is_version3 = False
 
 
 def readConf():
@@ -49,10 +45,7 @@ def printInfo(ssh_info):
 def select(ssh_infos):
     printInfo(ssh_infos)
     # 输入
-    if is_version3:
-        i_value = input('请输入序列号 or ip or hostname (q 退出):')
-    else:
-        i_value = raw_input('请输入序列号 or ip or hostname (q 退出):')
+    i_value = input('请输入序列号 or ip or hostname (q 退出):')
     if (i_value == 'q'):
         exit(0)
     try:
@@ -71,6 +64,11 @@ def select(ssh_infos):
         index = i[1].find(i_value)
         if (index != -1):
             selected_ssh_infos.append(i)
+        # 也搜索描述
+        index = i[3].find(i_value)
+        if (index != -1):
+            selected_ssh_infos.append(i)
+
     if (len(selected_ssh_infos) == 0):
         print('没找到和这个ip有近似的')
         select(ssh_infos)
