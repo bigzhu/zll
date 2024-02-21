@@ -1,2 +1,5 @@
 ssh.ini
 .ropeproject/
+*.csv
+ssh.ini*
+ssh_old.ini
