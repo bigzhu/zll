@@ -8,13 +8,16 @@ import sys
 from bigzhu_py.file_z import csv_z
 from bigzhu_py.print_z import table_print
 
+file_path = ""
+
 
 def read_hosts():
     """
     读取置文件
     """
-    # ssh_info = []
-    header, rows = csv_z.read_csv(f"{sys.path[0]}/hosts.csv")
+    global file_papth
+    file_papth = f"{sys.path[0]}/hosts.csv"
+    header, rows = csv_z.read_csv(file_papth)
     return header, rows
 
 
@@ -35,10 +38,27 @@ def ssh(ssh_info):
     os.system(command)
 
 
+def add_new():
+    user = input("请输入用户名:")
+    if user is None:
+        raise ValueError("必须输入用户名")
+    host = input("请输入ip or hostname:")
+    if host is None:
+        raise ValueError("必须输入ip or hostname")
+    port = input("请输入端口(默认22):").strip() or 22
+    description = input("请输入附加说明:").strip() or "无"
+    csv_z.write_csv_append(file_papth, [user, host, port, description])
+    print("添加成功!")
+    main()
+
+
 def select(header: list, rows: list):
     print_info(header, rows)
     # 输入
-    i_value = input("请输入序列号 or ip or hostname (q 退出):")
+    i_value = input("请输入序列号 or ip or hostname (q 退出, a 添加):")
+    if i_value == "a":
+        add_new()
+        return
     if i_value == "q":
         exit(0)
     try:
@@ -74,7 +94,10 @@ def select(header: list, rows: list):
         return select(header, selected_ssh_infos)  # 找到一堆，再过滤
 
 
-if __name__ == "__main__":
+def main():
     header, hosts = read_hosts()
-    if hosts is not None:
-        select(header, hosts)
+    select(header, hosts)
+
+
+if __name__ == "__main__":
+    main()
