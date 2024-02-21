@@ -29,7 +29,6 @@ def print_info(header: list, rows: list):
 
 
 def ssh(ssh_info):
-    print(ssh_info)
     user = ssh_info[0]
     ip = ssh_info[1]
     port = ssh_info[3] if len(ssh_info) > 4 else 22
