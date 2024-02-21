@@ -3,8 +3,8 @@
 # file_name=ssh.py
 
 # from __future__ import print_function  # 为了让 Python2 的 print() 不要答应成 tuple
-import sys
 import os
+import sys
 
 
 def readConf():
@@ -12,7 +12,7 @@ def readConf():
     读取置文件
     """
     ssh_info = []
-    with open(f"{sys.path[0]}/ssh.ini", "r") as f:
+    with open(sys.path[0] + "/ssh.ini", "r") as f:
         for i in f:
             ssh_one_info = i.split()
             if len(ssh_one_info) != 0:
@@ -79,7 +79,7 @@ def select(ssh_infos):
         if index != -1:
             selected_ssh_infos.append(i)
 
-    if len(selected_ssh_infos) == 0:
+    if not selected_ssh_infos:
         print("没找到和这个ip有近似的")
         select(ssh_infos)
     elif len(selected_ssh_infos) == 1:  # 找到一个，直接登录
