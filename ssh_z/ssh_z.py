@@ -4,20 +4,31 @@
 
 # from __future__ import print_function  # 为了让 Python2 的 print() 不要打印成 tuple
 import os
-import sys
 from bigzhu_py.file_z import csv_z
 from bigzhu_py.print_z import table_print
+from appdirs import user_data_dir
+APP_NAME = "ssh_z"
+APP_AUTHOR = "bigzhu"
+FILE_NAME = "hosts.csv"
+file_path = f"{user_data_dir(APP_NAME, APP_AUTHOR)}{os.sep}{FILE_NAME}"
 
-file_path = ""
+
+# 确保文件建立
+def create_file():
+    if os.path.exists(file_path):
+        return
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    with open(file_path, "w") as f:
+        f.write('User,Host,Port,Description')
+    print(f'Create file: {file_path}')
 
 
 def read_hosts():
     """
     读取置文件
     """
-    global file_papth
-    file_papth = f"{sys.path[0]}/hosts.csv"
-    header, rows = csv_z.read_csv(file_papth)
+    header, rows = csv_z.read_csv(file_path)
+    print(f'Use ssh connect info file: {file_path}')
     return header, rows
 
 
@@ -46,7 +57,7 @@ def add_new():
         raise ValueError("必须输入ip or hostname")
     port = input("请输入端口(默认22):").strip() or 22
     description = input("请输入附加说明:").strip() or "无"
-    csv_z.write_csv_append(file_papth, [user, host, port, description])
+    csv_z.write_csv_append(file_path, [user, host, port, description])
     print("添加成功!")
     main()
 
@@ -94,6 +105,7 @@ def select(header: list, rows: list):
 
 
 def main():
+    create_file()
     header, hosts = read_hosts()
     select(header, hosts)
 
