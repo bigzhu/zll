@@ -1,6 +1,6 @@
-# ssh_oper
+# BigZhu(z) Shell (ll)
 
-ssh 命令行辅助登录工具
+我的 ssh 命令行辅助登录工具
 
 记录 ssh 登录信息, 显示列表并协助登录
 
@@ -9,7 +9,7 @@ ssh 命令行辅助登录工具
 ## install
 
 ```bash
-pip install ssh_z
+pip install zll
 ```
 
 ## 使用

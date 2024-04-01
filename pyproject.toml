@@ -1,17 +1,22 @@
 [tool.poetry]
-name = "ssh_z"
-version = "0.1.0"
-description = ""
+name = "zll"
+version = "0.1.5"
+description = "my ssh client"
 authors = ["bigzhu <vermiliondun@gmail.com>"]
 readme = "README.md"
+homepage = "https://github.com/bigzhu/zll"
+repository = "https://github.com/bigzhu/zll"
+documentation = "https://github.com/bigzhu/zll"
+keywords = ["ssh", "tool"]
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
-bigzhu-py = "^0.1.3"
 appdirs = "^1.4.4"
+zbig = "^0.1.7"
 
 [tool.poetry.scripts]
-ssh_z = "ssh_z.ssh_z:main"
+zll = "zll.zll:main"
 
 [build-system]
 requires = ["poetry-core"]
