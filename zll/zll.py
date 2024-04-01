@@ -3,6 +3,7 @@
 # file_name=zll.py
 
 # from __future__ import print_function  # 为了让 Python2 的 print() 不要打印成 tuple
+import contextlib
 import os
 from zbig.zfile import zcsv
 from zbig import zprint
@@ -44,7 +45,7 @@ def ssh(ssh_info):
     user = ssh_info[0]
     ip = ssh_info[1]
     port = ssh_info[3] if len(ssh_info) > 4 else 22
-    print("ssh 登录 %s 中......" % ssh_info[1])
+    print("ssh 登录 %s 中......" % ip)
     command = "export TERM=xterm;ssh -p %s %s@%s" % (port, user, ip)
     os.system(command)
 
@@ -72,7 +73,7 @@ def select(header: list, rows: list):
         return
     if i_value == "q":
         exit(0)
-    try:
+    with contextlib.suppress(ValueError):
         # 尝试转为int, 看输入是否为编号
         i_value = int(i_value)
         if i_value <= len(rows):
@@ -80,10 +81,6 @@ def select(header: list, rows: list):
             return
         else:
             i_value = str(i_value)
-    except ValueError:
-        pass
-        # print verr
-
     selected_ssh_infos = []
     for i in rows:
         index = i[1].find(i_value)
