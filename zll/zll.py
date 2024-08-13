@@ -13,6 +13,7 @@ APP_NAME = "zll"
 APP_AUTHOR = "bigzhu"
 FILE_NAME = "hosts.csv"
 file_path = f"{user_data_dir(APP_NAME, APP_AUTHOR)}{os.sep}{FILE_NAME}"
+print(file_path)
 
 
 # 确保文件建立
@@ -21,7 +22,7 @@ def create_file():
         return
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "w") as f:
-        f.write("User,Host,Port,Description")
+        f.write("User,Host,Port,Description\n")
     print(f"Create file: {file_path}")
 
 
@@ -45,34 +46,44 @@ def ssh(ssh_info):
     user = ssh_info[0]
     ip = ssh_info[1]
     port = ssh_info[3] if len(ssh_info) > 4 else 22
-    print("ssh 登录 %s 中......" % ip)
+    print("ssh loging %s ......" % ip)
     command = "export TERM=xterm;ssh -p %s %s@%s" % (port, user, ip)
     os.system(command)
 
 
 def add_new():
-    user = input("请输入用户名:")
+    user = input("Input username:")
     if user is None:
-        raise ValueError("必须输入用户名")
-    host = input("请输入ip or hostname:")
+        raise ValueError("Must input username")
+    host = input("Input ip or hostname:")
     if host is None:
-        raise ValueError("必须输入ip or hostname")
-    port = input("请输入端口(默认22):").strip() or 22
-    description = input("请输入附加说明:").strip() or "无"
+        raise ValueError("Must input ip or hostname")
+    port = input("Input port(default 22):").strip() or 22
+    description = input("Input comment:").strip() or ""
     zcsv.write_csv_append(file_path, [user, host, port, description])
-    print("添加成功!")
+    print("Added successfully!")
+    main()
+
+
+def delete_old(s_number):
+    i_number = int(s_number)
+    zcsv.write_csv_delete(file_path, i_number)
+    print("Delete successfully!")
     main()
 
 
 def select(header: list, rows: list):
     print_info(header, rows)
     # 输入
-    i_value = input("请输入序列号 or ip or hostname (q 退出, a 添加):")
+    i_value = input("input number or ip or hostname (q quit, a add, d delete):")
     if i_value == "a":
         add_new()
         return
     if i_value == "q":
         exit(0)
+    if i_value == "d":
+        d_value = input("input number to delete):")
+        delete_old(d_value)
     with contextlib.suppress(ValueError):
         # 尝试转为int, 看输入是否为编号
         i_value = int(i_value)
@@ -92,13 +103,16 @@ def select(header: list, rows: list):
             selected_ssh_infos.append(i)
 
     if not selected_ssh_infos:
-        print("没找到和这个ip有近似的")
+        print("Can't find any IP similar to this one.")
         select(header, rows)
     elif len(selected_ssh_infos) == 1:  # 找到一个，直接登录
         ssh(selected_ssh_infos[0])
         return
     else:
-        print("找到%s个匹配%s的, 请再次选择!" % (len(selected_ssh_infos), i_value))
+        print(
+            "Found %s matching %s, please select again!"
+            % (len(selected_ssh_infos), i_value)
+        )
         return select(header, selected_ssh_infos)  # 找到一堆，再过滤
 
 
