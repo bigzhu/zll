@@ -8,6 +8,7 @@ import os
 from zbig.zfile import zcsv
 from zbig import zprint
 from appdirs import user_data_dir
+import copy
 
 APP_NAME = "zll"
 APP_AUTHOR = "bigzhu"
@@ -28,26 +29,27 @@ def create_file():
 
 def read_hosts():
     """
-    读取置文件
+    Read configuration file
     """
     header, rows = zcsv.read_csv(file_path)
-    print(f"Use ssh connect info file: {file_path}")
+    print(f"Using SSH connection info file: {file_path}")
     return header, rows
 
 
 # 添加 number 和打印
 def print_info(header: list, rows: list):
-    header.insert(0, "Number")
+    number_header = copy.copy(header)  # copy header
+    number_header.insert(0, "Number")
     print_rows = [[i] + rows[i] for i in range(len(rows))]
-    zprint.table([header] + print_rows, "    ")
+    zprint.table([number_header] + print_rows, "    ")
 
 
 def ssh(ssh_info):
     user = ssh_info[0]
     ip = ssh_info[1]
     port = ssh_info[3] if len(ssh_info) > 4 else 22
-    print("ssh loging %s ......" % ip)
-    command = "export TERM=xterm;ssh -p %s %s@%s" % (port, user, ip)
+    print(f"SSH logging into {ip} ......")
+    command = f"export TERM=xterm;ssh -p {port} {user}@{ip}"
     os.system(command)
 
 
@@ -74,15 +76,17 @@ def delete_old(s_number):
 
 def select(header: list, rows: list):
     print_info(header, rows)
-    # 输入
-    i_value = input("input number or ip or hostname (q quit, a add, d delete):")
+    # Input
+    i_value = input("Input number, IP, or hostname (q to quit, a to add, d to delete): ")
+    if i_value == "":
+        select(header, rows)
     if i_value == "a":
         add_new()
         return
     if i_value == "q":
         exit(0)
     if i_value == "d":
-        d_value = input("input number to delete):")
+        d_value = input("Input number to delete: ")
         delete_old(d_value)
     with contextlib.suppress(ValueError):
         # 尝试转为int, 看输入是否为编号
@@ -92,12 +96,14 @@ def select(header: list, rows: list):
             return
         else:
             i_value = str(i_value)
+
     selected_ssh_infos = []
     for i in rows:
         index = i[1].find(i_value)
         if index != -1:
             selected_ssh_infos.append(i)
-        # 也搜索描述
+            continue
+        # 搜索描述
         index = i[3].find(i_value)
         if index != -1:
             selected_ssh_infos.append(i)
@@ -105,15 +111,14 @@ def select(header: list, rows: list):
     if not selected_ssh_infos:
         print("Can't find any IP similar to this one.")
         select(header, rows)
-    elif len(selected_ssh_infos) == 1:  # 找到一个，直接登录
+    elif len(selected_ssh_infos) == 1:  # If one is found, log in directly
         ssh(selected_ssh_infos[0])
         return
     else:
         print(
-            "Found %s matching %s, please select again!"
-            % (len(selected_ssh_infos), i_value)
+            f"Found {len(selected_ssh_infos)} matches for {i_value}, please select again!"
         )
-        return select(header, selected_ssh_infos)  # 找到一堆，再过滤
+        return select(header, selected_ssh_infos)  # Found multiple, filter again
 
 
 def main():

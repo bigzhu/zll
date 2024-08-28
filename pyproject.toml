@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "zll"
-version = "0.1.9"
+version = "0.1.10"
 description = "my ssh client"
 authors = ["bigzhu <vermiliondun@gmail.com>"]
 readme = "README.md"
