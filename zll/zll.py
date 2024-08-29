@@ -1,124 +1,114 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding=utf-8
 # file_name=zll.py
 
-# from __future__ import print_function  # 为了让 Python2 的 print() 不要打印成 tuple
-import contextlib
 import os
+from pathlib import Path
+from typing import List, Tuple
 from zbig.zfile import zcsv
 from zbig import zprint
 from appdirs import user_data_dir
-import copy
 
 APP_NAME = "zll"
 APP_AUTHOR = "bigzhu"
 FILE_NAME = "hosts.csv"
-file_path = f"{user_data_dir(APP_NAME, APP_AUTHOR)}{os.sep}{FILE_NAME}"
+file_path = Path(user_data_dir(APP_NAME, APP_AUTHOR)) / FILE_NAME
 print(file_path)
 
 
 # 确保文件建立
 def create_file():
-    if os.path.exists(file_path):
+    if file_path.exists():
         return
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    with open(file_path, "w") as f:
-        f.write("User,Host,Port,Description\n")
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text("User,Host,Port,Description\n")
     print(f"Create file: {file_path}")
 
 
-def read_hosts():
+def read_hosts() -> Tuple[List[str], List[List[str]]]:
     """
     Read configuration file
     """
-    header, rows = zcsv.read_csv(file_path)
+    header, rows = zcsv.read_csv(str(file_path))  # Convert Path to string
     print(f"Using SSH connection info file: {file_path}")
     return header, rows
 
 
 # 添加 number 和打印
-def print_info(header: list, rows: list):
-    number_header = copy.copy(header)  # copy header
-    number_header.insert(0, "Number")
-    print_rows = [[i] + rows[i] for i in range(len(rows))]
+def print_info(header: List[str], rows: List[List[str]]):
+    number_header = ["Number"] + header
+    print_rows = [[i] + row for i, row in enumerate(rows)]
     zprint.table([number_header] + print_rows, "    ")
 
 
-def ssh(ssh_info):
-    user = ssh_info[0]
-    ip = ssh_info[1]
-    port = ssh_info[3] if len(ssh_info) > 4 else 22
+def ssh(ssh_info: List[str]):
+    user, ip, port, *_ = ssh_info + [22]  # Default port to 22 if not provided
     print(f"SSH logging into {ip} ......")
-    command = f"export TERM=xterm;ssh -p {port} {user}@{ip}"
-    os.system(command)
+    os.system(f"export TERM=xterm;ssh -p {port} {user}@{ip}")
 
 
 def add_new():
-    user = input("Input username:")
-    if user is None:
-        raise ValueError("Must input username")
-    host = input("Input ip or hostname:")
-    if host is None:
-        raise ValueError("Must input ip or hostname")
-    port = input("Input port(default 22):").strip() or 22
-    description = input("Input comment:").strip() or ""
-    zcsv.write_csv_append(file_path, [user, host, port, description])
+    user = input("Input username: ").strip()
+    host = input("Input ip or hostname: ").strip()
+    if not user or not host:
+        raise ValueError("Username and hostname are required")
+    port = input("Input port (default 22): ").strip() or "22"
+    description = input("Input comment: ").strip()
+    zcsv.write_csv_append(str(file_path), [user, host, port, description])
     print("Added successfully!")
     main()
 
 
-def delete_old(s_number):
-    i_number = int(s_number)
-    zcsv.write_csv_delete(file_path, i_number)
-    print("Delete successfully!")
+def delete_old(s_number: str):
+    try:
+        i_number = int(s_number)
+        zcsv.write_csv_delete(str(file_path), i_number)
+        print("Delete successfully!")
+    except ValueError:
+        print("Invalid number for deletion")
     main()
 
 
-def select(header: list, rows: list):
-    print_info(header, rows)
-    # Input
-    i_value = input("Input number, IP, or hostname (q to quit, a to add, d to delete): ")
-    if i_value == "":
-        select(header, rows)
-    if i_value == "a":
-        add_new()
-        return
-    if i_value == "q":
-        exit(0)
-    if i_value == "d":
-        d_value = input("Input number to delete: ")
-        delete_old(d_value)
-    with contextlib.suppress(ValueError):
-        # 尝试转为int, 看输入是否为编号
-        i_value = int(i_value)
-        if i_value <= len(rows):
-            ssh(rows[i_value])
-            return
-        else:
-            i_value = str(i_value)
-
-    selected_ssh_infos = []
-    for i in rows:
-        index = i[1].find(i_value)
-        if index != -1:
-            selected_ssh_infos.append(i)
-            continue
-        # 搜索描述
-        index = i[3].find(i_value)
-        if index != -1:
-            selected_ssh_infos.append(i)
-
-    if not selected_ssh_infos:
-        print("Can't find any IP similar to this one.")
-        select(header, rows)
-    elif len(selected_ssh_infos) == 1:  # If one is found, log in directly
-        ssh(selected_ssh_infos[0])
-        return
-    else:
-        print(
-            f"Found {len(selected_ssh_infos)} matches for {i_value}, please select again!"
+def select(header: List[str], rows: List[List[str]]):
+    while True:
+        print_info(header, rows)
+        i_value = (
+            input("Input number, IP, or hostname (q to quit, a to add, d to delete): ")
+            .strip()
+            .lower()
         )
-        return select(header, selected_ssh_infos)  # Found multiple, filter again
+
+        if i_value == "q":
+            return
+        if i_value == "a":
+            return add_new()
+        if i_value == "d":
+            d_value = input("Input number to delete: ")
+            return delete_old(d_value)
+        if not i_value:
+            continue
+
+        try:
+            i_value_int = int(i_value)
+            if 0 <= i_value_int < len(rows):
+                return ssh(rows[i_value_int])
+        except ValueError:
+            # If i_value is not an integer, continue with string comparison
+            pass
+
+        selected_ssh_infos = [
+            row for row in rows if i_value in str(row[1]) or i_value in str(row[3])
+        ]
+
+        if not selected_ssh_infos:
+            print("Can't find any IP similar to this one.")
+        elif len(selected_ssh_infos) == 1:
+            return ssh(selected_ssh_infos[0])
+        else:
+            print(
+                f"Found {len(selected_ssh_infos)} matches for {i_value}, please select again!"
+            )
+            rows = selected_ssh_infos
 
 
 def main():
